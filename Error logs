@@ -1,0 +1,52 @@
+Running with gitlab-runner 16.11.2 (1d04b67a)
+  on l7lp2apmglr0004-Prod-Global-GitLab-Cloud-Docker-apihub-shared FKyj3sKQ, system ID: s_842e1c8182d6
+Resolving secrets
+Preparing the "docker" executor
+00:04
+Using Docker executor with image fmk.nexus.onefiserv.net/apm/0006528/apihub-apigee-node:latest ...
+Pulling docker image fmk.nexus.onefiserv.net/apm/0006528/apihub-apigee-node:latest ...
+Using docker image sha256:a2339577aa6c3cd22901956198610b1b9bfdfaa5c774e1c9180b3ee93abb022b for fmk.nexus.onefiserv.net/apm/0006528/apihub-apigee-node:latest with digest fmk.nexus.onefiserv.net/apm/0006528/apihub-apigee-node@sha256:7320fa6b9b54070f5a80cf07275ea42f6eb29f1c5b02495d6795d2824e3b7ca9 ...
+Preparing environment
+00:01
+Running on runner-fkyj3skq-project-66121-concurrent-0 via l7lp2apmglr0004...
+Getting source from Git repository
+00:02
+Fetching changes with git depth set to 20...
+Reinitialized existing Git repository in /builds/fts-apimanagement/fts-apim-apiproxies/apigee-x/testproxygen-hkn-V1/.git/
+Checking out cf1b5daf as detached HEAD (ref is feature-1)...
+Removing apim_gitlab_group_variables.json
+Removing apim_gitlab_na_variables.json
+Removing vars.env
+Skipping Git submodules setup
+Restoring cache
+00:02
+Checking cache for cf1b5daf995be103b3e98b5ce181b02a44097c43-protected...
+cache.zip is up to date                            
+Successfully extracted cache
+Executing "step_script" stage of the job script
+01:33
+Using docker image sha256:a2339577aa6c3cd22901956198610b1b9bfdfaa5c774e1c9180b3ee93abb022b for fmk.nexus.onefiserv.net/apm/0006528/apihub-apigee-node:latest with digest fmk.nexus.onefiserv.net/apm/0006528/apihub-apigee-node@sha256:7320fa6b9b54070f5a80cf07275ea42f6eb29f1c5b02495d6795d2824e3b7ca9 ...
+$ echo "LAST_EXECUTED_STAGE_NAME=$CI_JOB_STAGE" >> build.env # collapsed multi-line command
+$ if [ -d "edge" ]; then  # collapsed multi-line command
+v18.17.1
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Cloning into 'apim-apigeelint'...
+npm WARN deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+npm WARN deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#browser_compatibility
+npm ERR! code ECONNRESET
+npm ERR! errno ECONNRESET
+npm ERR! network request to https://registry.npmmirror.com/xmldom/-/xmldom-0.6.0.tgz failed, reason: Client network socket disconnected before secure TLS connection was established
+npm ERR! network This is a problem related to network connectivity.
+npm ERR! network In most cases you are behind a proxy or have bad network settings.
+npm ERR! network 
+npm ERR! network If you are behind a proxy, please make sure that the
+npm ERR! network 'proxy' config is set properly.  See: 'npm help config'
+npm ERR! A complete log of this run can be found in: /home/node/.npm/_logs/2025-06-24T14_32_21_362Z-debug-0.log
+Uploading artifacts for failed job
+00:04
+Uploading artifacts...
+build.env: found 1 matching artifact files and directories 
+Uploading artifacts as "dotenv" to coordinator... 201 Created  id=15556288 responseStatus=201 Created token=glcbt-64
+Cleaning up project directory and file based variables
+00:01
+ERROR: Job failed: exit code 1
