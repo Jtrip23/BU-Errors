@@ -10,60 +10,41 @@ variables:
   NEXUS_REGISTRY: "fmk.nexus-ci.onefiserv.net"
   NEXUS_REPO_PATH: "apm/0006528"
   FULL_IMAGE_NAME: "$NEXUS_REGISTRY/$NEXUS_REPO_PATH/$IMAGE_NAME:$IMAGE_TAG"
-  APP_LANGUAGE: "springboot" # set to java, springboot, python, or node as needed
 
+# -------------------------------------
+# Step 1: Build Spring Boot application
+# -------------------------------------
 build_app:
   stage: build
-  tags:
-    - apimhub-shell-prod
+  image: maven:3.9.4-openjdk-17
   script:
-    - |
-      if [ "$APP_LANGUAGE" = "java" ]; then
-        echo "Detected Java application"
-        docker run --rm -v $PWD:/app -w /app maven:3.9.4-openjdk-17 mvn clean package -DskipTests
-
-      elif [ "$APP_LANGUAGE" = "springboot" ]; then
-        echo "Detected Spring Boot application"
-        docker run --rm -v $PWD:/app -w /app maven:3.9.4-openjdk-17 mvn clean install -DskipTests
-        echo "Spring Boot build completed"
-
-      elif [ "$APP_LANGUAGE" = "python" ]; then
-        echo "Detected Python application"
-        pip install -r requirements.txt
-
-      elif [ "$APP_LANGUAGE" = "node" ]; then
-        echo "Detected Node.js application"
-        npm install
-        npm run build
-
-      else
-        echo "Unknown application type. Exiting."
-        exit 1
-      fi
+    - echo "Building Spring Boot application..."
+    - mvn clean install -DskipTests
   artifacts:
     paths:
       - target/*.jar
-      - dist/
-      - app/
-  rules:
-    - changes:
-        - "**/*"
+    expire_in: 1h
 
+# -------------------------------------
+# Step 2: Build Docker image & push to Nexus
+# -------------------------------------
 build_and_push_image:
   stage: build_and_push
-  tags:
-    - apimhub-shell-prod
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  dependencies:
+    - build_app
   script:
     - echo "Logging in to Nexus Docker registry..."
     - echo "$NEXUS_REPO_PASS" | docker login -u "$NEXUS_REPO_USER" --password-stdin $NEXUS_REGISTRY
-
     - echo "Building Docker image..."
     - docker build -t $FULL_IMAGE_NAME .
-
     - echo "Pushing Docker image to Nexus..."
     - docker push $FULL_IMAGE_NAME
-  dependencies:
-    - build_app
   rules:
     - changes:
         - "**/*"
