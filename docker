@@ -1,0 +1,28 @@
+# Build stage
+FROM maven:3.9.5-eclipse-temurin-17 as builder
+
+WORKDIR /build
+
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn clean package -DskipTests
+
+# Runtime stage
+FROM fmk.nexus.onefiserv.net/fmk/java/openjdk17-jre:FMK-06-14-24
+
+USER root
+
+RUN groupadd -r mygroup && useradd -r -g mygroup myuser
+RUN mkdir /app && chown -R myuser:mygroup /app
+
+WORKDIR /app
+
+COPY --from=builder /build/target/*.jar app.jar
+RUN chown myuser:mygroup app.jar
+
+EXPOSE 8022
+
+USER myuser
+
+CMD ["java", "-jar", "app.jar"]
