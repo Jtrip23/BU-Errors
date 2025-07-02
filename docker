@@ -1,28 +1,23 @@
-# Build stage
-FROM maven:3.9.5-eclipse-temurin-17 as builder
-
-WORKDIR /build
-
-COPY pom.xml .
-COPY src ./src
-
-RUN mvn clean package -DskipTests
-
-# Runtime stage
+# Use official OpenJDK base image
 FROM fmk.nexus.onefiserv.net/fmk/java/openjdk17-jre:FMK-06-14-24
 
-USER root
-
+# Create user and group for running app securely
 RUN groupadd -r mygroup && useradd -r -g mygroup myuser
+
+# Create app directory with appropriate permissions
 RUN mkdir /app && chown -R myuser:mygroup /app
 
+# Set working directory
 WORKDIR /app
 
-COPY --from=builder /build/target/*.jar app.jar
-RUN chown myuser:mygroup app.jar
+# Copy jar from build stage
+COPY --chown=myuser:mygroup target/*.jar app.jar
 
-EXPOSE 8022
+# Expose the port your Spring Boot app runs on
+EXPOSE 8080
 
+# Run the application as non-root user
 USER myuser
 
-CMD ["java", "-jar", "app.jar"]
+# Run the jar file
+ENTRYPOINT ["java", "-jar", "app.jar"]
