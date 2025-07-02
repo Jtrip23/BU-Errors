@@ -10,17 +10,44 @@ variables:
   NEXUS_REGISTRY: "fmk.nexus-ci.onefiserv.net"
   NEXUS_REPO_PATH: "apm/0006528"
   FULL_IMAGE_NAME: "$NEXUS_REGISTRY/$NEXUS_REPO_PATH/$IMAGE_NAME:$IMAGE_TAG"
+  APP_LANGUAGE: "springboot" # set to java, springboot, python, or node as needed
 
-build_jar:
+build_app:
   stage: build
   tags:
     - apimhub-shell-prod
   script:
-    - echo "Building jar with Maven..."
-    - mvn clean package -DskipTests
+    - |
+      if [ "$APP_LANGUAGE" = "java" ]; then
+        echo "Detected Java application"
+        docker run --rm -v $PWD:/app -w /app maven:3.9.4-openjdk-17 mvn clean package -DskipTests
+
+      elif [ "$APP_LANGUAGE" = "springboot" ]; then
+        echo "Detected Spring Boot application"
+        docker run --rm -v $PWD:/app -w /app maven:3.9.4-openjdk-17 mvn clean install -DskipTests
+        echo "Spring Boot build completed"
+
+      elif [ "$APP_LANGUAGE" = "python" ]; then
+        echo "Detected Python application"
+        pip install -r requirements.txt
+
+      elif [ "$APP_LANGUAGE" = "node" ]; then
+        echo "Detected Node.js application"
+        npm install
+        npm run build
+
+      else
+        echo "Unknown application type. Exiting."
+        exit 1
+      fi
   artifacts:
     paths:
       - target/*.jar
+      - dist/
+      - app/
+  rules:
+    - changes:
+        - "**/*"
 
 build_and_push_image:
   stage: build_and_push
@@ -36,7 +63,7 @@ build_and_push_image:
     - echo "Pushing Docker image to Nexus..."
     - docker push $FULL_IMAGE_NAME
   dependencies:
-    - build_jar
+    - build_app
   rules:
     - changes:
         - "**/*"
