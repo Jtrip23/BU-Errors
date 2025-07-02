@@ -1,26 +1,43 @@
 stages:
+  - build
   - build_and_push
 
 variables:
   IMAGE_NAME: "$CI_PROJECT_NAME"
   IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
-  NEXUS_REPO_USER: "svc-apim-cicd-dev"
-  NEXUS_REPO_PASS: "F_arX1Z%fIQSfZEM@aJL9RRk*"
   NEXUS_REGISTRY: "fmk.nexus-ci.onefiserv.net"
   NEXUS_REPO_PATH: "apm/0006528"
   FULL_IMAGE_NAME: "$NEXUS_REGISTRY/$NEXUS_REPO_PATH/$IMAGE_NAME:$IMAGE_TAG"
+
+build_jar:
+  stage: build
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - echo "Building jar..."
+    - mvn clean package -DskipTests
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1h
 
 build_and_push_image:
   stage: build_and_push
   tags:
     - apihub-shell-prod
+  image: docker:24.0.2 # Use Docker-in-Docker
+  services:
+    - docker:24.0.2-dind
+  before_script:
+    - apk add --no-cache curl
   script:
     - echo "Logging in to Nexus Docker registry..."
-    - echo "$NEXUS_REPO_PASS" | docker login -u $Nexus_REPO_USER -p $Nexus_REPO_PASS fmk.nexus-ci.onefiserv.net
+    - echo "$NEXUS_REPO_PASS" | docker login -u "$NEXUS_REPO_USER" --password-stdin "$NEXUS_REGISTRY"
     - echo "Building Docker image..."
-    - docker build -t $FULL_IMAGE_NAME .
+    - docker build -t "$FULL_IMAGE_NAME" .
     - echo "Pushing Docker image to Nexus..."
-    - docker push $FULL_IMAGE_NAME
+    - docker push "$FULL_IMAGE_NAME"
+  dependencies:
+    - build_jar
   rules:
     - changes:
         - "**/*"
